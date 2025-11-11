@@ -4,10 +4,12 @@ import 'package:responsive_table/responsive_table.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -26,7 +28,7 @@ class MyApp extends StatelessWidget {
 }
 
 class DataPage extends StatefulWidget {
-  DataPage({Key? key}) : super(key: key);
+  const DataPage({Key? key}) : super(key: key);
   @override
   _DataPageState createState() => _DataPageState();
 }
@@ -53,13 +55,12 @@ class _DataPageState extends State<DataPage> {
   bool _sortAscending = true;
   bool _isLoading = true;
   bool _showSelect = true;
-  var random = new Random();
+  final Random random = Random();
 
   List<Map<String, dynamic>> _generateData({int n: 100}) {
-    final List source = List.filled(n, Random.secure());
+  final List source = List.filled(n, Random.secure());
     List<Map<String, dynamic>> temps = [];
     var i = 1;
-    print(i);
     // ignore: unused_local_variable
     for (var data in source) {
       temps.add({
@@ -110,7 +111,7 @@ class _DataPageState extends State<DataPage> {
   _filterData(value) {
     setState(() => _isLoading = true);
 
-    try {
+  try {
       if (value == "" || value == null) {
         _sourceFiltered = _sourceOriginal;
       } else {
@@ -127,7 +128,7 @@ class _DataPageState extends State<DataPage> {
       _expanded = List.generate(_rangeTop, (index) => false);
       _source = _sourceFiltered.getRange(0, _rangeTop).toList();
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
     setState(() => _isLoading = false);
   }
@@ -309,7 +310,7 @@ class _DataPageState extends State<DataPage> {
                   autoHeight: false,
                   dropContainer: (data) {
                     if (int.tryParse(data['id'].toString())!.isEven) {
-                      return Text("is Even");
+                      return const Text("is Even");
                     }
                     return _DropDownContainer(data: data);
                   },
@@ -322,7 +323,7 @@ class _DataPageState extends State<DataPage> {
                     /// print(header);
                   },
                   onTabRow: (data) {
-                    print(data);
+                    debugPrint(data.toString());
                   },
                   onSort: (value) {
                     setState(() => _isLoading = true);
@@ -351,7 +352,7 @@ class _DataPageState extends State<DataPage> {
                   sortColumn: _sortColumn,
                   isLoading: _isLoading,
                   onSelect: (value, item) {
-                    print("$value  $item ");
+                    debugPrint("$value  $item ");
                     if (value!) {
                       setState(() => _selecteds.add(item));
                     } else {
