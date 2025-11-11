@@ -105,6 +105,12 @@ class ResponsiveDatatable extends StatefulWidget {
 }
 
 class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
+  static const BoxDecoration _defaultBorderDecoration = BoxDecoration(
+    border: Border(bottom: BorderSide(color: Color(0xFFE0E0E0), width: 1)),
+  );
+
+  static const double _defaultPadding = 11.0;
+  static const double _iconSize = 15.0;
   Widget mobileHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -154,16 +160,17 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
   }
 
   List<Widget> mobileList() {
-    final _decoration = BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey[300]!, width: 1)));
-    final _rowDecoration = widget.rowDecoration ?? _decoration;
-    final _selectedDecoration = widget.selectedDecoration ?? _decoration;
-    return widget.source!.map((data) {
+    final _rowDecoration = widget.rowDecoration ?? _defaultBorderDecoration;
+    final _selectedDecoration = widget.selectedDecoration ?? _defaultBorderDecoration;
+    final source = widget.source ?? [];
+    final selecteds = widget.selecteds ?? [];
+
+    return source.map((data) {
       return InkWell(
         onTap: () => widget.onTabRow?.call(data),
         child: Container(
           /// TODO:
-          decoration: widget.selecteds!.contains(data)
+          decoration: selecteds.contains(data)
               ? _selectedDecoration
               : _rowDecoration,
           child: Column(
@@ -173,9 +180,9 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Spacer(),
-                  if (widget.showSelect && widget.selecteds != null)
+                  if (widget.showSelect && selecteds.isNotEmpty)
                     Checkbox(
-                        value: widget.selecteds!.contains(data),
+                        value: selecteds.contains(data),
                         onChanged: (value) {
                           if (widget.onSelect != null) {
                             widget.onSelect!(value, data);
@@ -200,7 +207,7 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
                                 : Text(
                                     header.text,
                                     overflow: TextOverflow.clip,
-                                    style: widget.selecteds!.contains(data)
+                                    style: selecteds.contains(data)
                                         ? widget.selectedTextStyle
                                         : widget.rowTextStyle,
                                   ),
@@ -219,7 +226,7 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
                                       )
                                     : Text(
                                         "${data[header.value]}",
-                                        style: widget.selecteds!.contains(data)
+                                        style: selecteds.contains(data)
                                             ? widget.selectedTextStyle
                                             : widget.rowTextStyle,
                                       )
@@ -235,7 +242,94 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
     }).toList();
   }
 
-  static Alignment headerAlignSwitch(TextAlign? textAlign) {
+  Widget mobileListView() {
+    final _rowDecoration = widget.rowDecoration ?? _defaultBorderDecoration;
+    final _selectedDecoration = widget.selectedDecoration ?? _defaultBorderDecoration;
+
+    final source = widget.source ?? [];
+    final selecteds = widget.selecteds ?? [];
+
+    return ListView.builder(
+      itemCount: source.length,
+      itemBuilder: (context, index) {
+        final data = source[index];
+        return InkWell(
+          onTap: () => widget.onTabRow?.call(data),
+          child: Container(
+            decoration: selecteds.contains(data)
+                ? _selectedDecoration
+                : _rowDecoration,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Spacer(),
+                    if (widget.showSelect && selecteds.isNotEmpty)
+                      Checkbox(
+                          value: selecteds.contains(data),
+                          onChanged: (value) {
+                            if (widget.onSelect != null) {
+                              widget.onSelect!(value, data);
+                            }
+                          }),
+                  ],
+                ),
+                if (widget.commonMobileView && widget.dropContainer != null)
+                  widget.dropContainer!(data),
+                if (!widget.commonMobileView)
+                  ...widget.headers
+                      .where((header) => header.show == true)
+                      .toList()
+                      .map(
+                        (header) => Container(
+                          padding: const EdgeInsets.all(_defaultPadding),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              header.headerBuilder != null
+                                  ? header.headerBuilder!(header.value)
+                                  : Text(
+                                      header.text,
+                                      overflow: TextOverflow.clip,
+                                      style: selecteds.contains(data)
+                                          ? widget.selectedTextStyle
+                                          : widget.rowTextStyle,
+                                    ),
+                              const Spacer(),
+                              header.sourceBuilder != null
+                                  ? header.sourceBuilder!(
+                                      data[header.value], data)
+                                  : header.editable
+                                      ? TextEditableWidget(
+                                          data: data,
+                                          header: header,
+                                          textAlign: TextAlign.end,
+                                          onChanged: widget.onChangedRow,
+                                          onSubmitted: widget.onSubmittedRow,
+                                          hideUnderline: widget.hideUnderline,
+                                        )
+                                      : Text(
+                                          "${data[header.value]}",
+                                          style: selecteds.contains(data)
+                                              ? widget.selectedTextStyle
+                                              : widget.rowTextStyle,
+                                        )
+                            ],
+                          ),
+                        ),
+                      )
+                      .toList()
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Alignment headerAlignSwitch(TextAlign? textAlign) {
     switch (textAlign) {
       case TextAlign.center:
         return Alignment.center;
@@ -261,9 +355,9 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
         children: [
           if (widget.showSelect && widget.selecteds != null)
             Checkbox(
-                value: widget.selecteds!.length == widget.source!.length &&
+                value: (widget.selecteds?.length ?? 0) == (widget.source?.length ?? 0) &&
                     widget.source != null &&
-                    widget.source!.isNotEmpty,
+                    (widget.source?.isNotEmpty ?? false),
                 onChanged: (value) {
                   if (widget.onSelectAll != null) widget.onSelectAll!(value);
                 }),
@@ -281,7 +375,7 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
                       child: header.headerBuilder != null
                           ? header.headerBuilder!(header.value)
                           : Container(
-                              padding: const EdgeInsets.all(11),
+                              padding: const EdgeInsets.all(_defaultPadding),
                               alignment: headerAlignSwitch(header.textAlign),
                               child: Wrap(
                                 crossAxisAlignment: WrapCrossAlignment.center,
@@ -295,9 +389,9 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
                                       widget.sortColumn == header.value)
                                     widget.sortAscending!
                                         ? const Icon(Icons.arrow_downward,
-                                            size: 15)
+                                            size: _iconSize)
                                         : const Icon(Icons.arrow_upward,
-                                            size: 15)
+                                            size: _iconSize)
                                 ],
                               ),
                             ),
@@ -310,27 +404,32 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
   }
 
   List<Widget> desktopList() {
-    final _decoration = BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey[300]!, width: 1)));
-    final _rowDecoration = widget.rowDecoration ?? _decoration;
-    final _selectedDecoration = widget.selectedDecoration ?? _decoration;
+    final _rowDecoration = widget.rowDecoration ?? _defaultBorderDecoration;
+    final _selectedDecoration = widget.selectedDecoration ?? _defaultBorderDecoration;
+
+    final source = widget.source ?? [];
+    final selecteds = widget.selecteds ?? [];
+    final expanded = widget.expanded ?? [];
+
     List<Widget> widgets = [];
-    for (var index = 0; index < widget.source!.length; index++) {
-      final data = widget.source![index];
+    for (var index = 0; index < source.length; index++) {
+      final data = source[index];
       widgets.add(Column(
         children: [
           InkWell(
             onTap: () {
               widget.onTabRow?.call(data);
               setState(() {
-                widget.expanded![index] = !widget.expanded![index];
+                if (index < expanded.length) {
+                  expanded[index] = !expanded[index];
+                }
               });
             },
             child: Container(
               padding: EdgeInsets.all(widget.showSelect ? 0 : 11),
 
               /// TODO:
-              decoration: widget.selecteds!.contains(data)
+              decoration: selecteds.contains(data)
                   ? _selectedDecoration
                   : _rowDecoration,
               child: Row(
@@ -340,7 +439,7 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
                     Row(
                       children: [
                         Checkbox(
-                            value: widget.selecteds!.contains(data),
+                            value: selecteds.contains(data),
                             onChanged: (value) {
                               if (widget.onSelect != null) {
                                 widget.onSelect!(value, data);
@@ -367,7 +466,7 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
                                   : Text(
                                       "${data[header.value]}",
                                       textAlign: header.textAlign,
-                                      style: widget.selecteds!.contains(data)
+                                      style: selecteds.contains(data)
                                           ? widget.selectedTextStyle
                                           : widget.rowTextStyle,
                                     ),
@@ -379,7 +478,8 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
             ),
           ),
           if (widget.isExpandRows &&
-              widget.expanded![index] &&
+              index < expanded.length &&
+              expanded[index] &&
               widget.dropContainer != null)
             widget.dropContainer!(data)
         ],
@@ -425,15 +525,12 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
                 ),
               if (!widget.autoHeight)
                 Expanded(
-                  child: ListView(
-                    /// itemCount: source.length,
+                  child: Column(
                     children: [
                       if (widget.showSelect && widget.selecteds != null)
                         mobileHeader(),
                       if (widget.isLoading) const LinearProgressIndicator(),
-
-                      /// mobileList
-                      ...mobileList(),
+                      Expanded(child: mobileListView()),
                     ],
                   ),
                 ),
@@ -493,7 +590,7 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
 /// `TextEditableWidget`
 ///
 /// use to display when user allow any header columns to be editable
-class TextEditableWidget extends StatelessWidget {
+class TextEditableWidget extends StatefulWidget {
   /// `data`
   ///
   /// current data as Map
@@ -536,6 +633,33 @@ class TextEditableWidget extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<TextEditableWidget> createState() => _TextEditableWidgetState();
+}
+
+class _TextEditableWidgetState extends State<TextEditableWidget> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: "${widget.data[widget.header.value]}");
+  }
+
+  @override
+  void didUpdateWidget(TextEditableWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.data[oldWidget.header.value] != widget.data[widget.header.value]) {
+      _controller.text = "${widget.data[widget.header.value]}";
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       constraints: const BoxConstraints(maxWidth: 150),
@@ -544,20 +668,18 @@ class TextEditableWidget extends StatelessWidget {
       child: TextField(
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.all(0),
-          border: hideUnderline
+          border: widget.hideUnderline
               ? InputBorder.none
               : const UnderlineInputBorder(borderSide: BorderSide(width: 1)),
           alignLabelWithHint: true,
         ),
-        textAlign: textAlign,
-        controller: TextEditingController.fromValue(
-          TextEditingValue(text: "${data[header.value]}"),
-        ),
+        textAlign: widget.textAlign,
+        controller: _controller,
         onChanged: (newValue) {
-          data[header.value] = newValue;
-          onChanged?.call(data, header);
+          widget.data[widget.header.value] = newValue;
+          widget.onChanged?.call(widget.data, widget.header);
         },
-        onSubmitted: (x) => onSubmitted?.call(data, header),
+        onSubmitted: (x) => widget.onSubmitted?.call(widget.data, widget.header),
       ),
     );
   }

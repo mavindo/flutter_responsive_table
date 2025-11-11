@@ -97,16 +97,14 @@ class _DataPageState extends State<DataPage> {
     });
   }
 
-  _resetData({start: 0}) async {
+  _resetData({start = 0}) {
     setState(() => _isLoading = true);
     var _expandedLen =
         _total - start < _currentPerPage! ? _total - start : _currentPerPage;
-    Future.delayed(Duration(seconds: 0)).then((value) {
-      _expanded = List.generate(_expandedLen as int, (index) => false);
-      _source.clear();
-      _source = _sourceFiltered.getRange(start, start + _expandedLen).toList();
-      setState(() => _isLoading = false);
-    });
+    _expanded = List.generate(_expandedLen as int, (index) => false);
+    _source.clear();
+    _source = _sourceFiltered.getRange(start, start + _expandedLen).toList();
+    setState(() => _isLoading = false);
   }
 
   _filterData(value) {
