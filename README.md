@@ -492,6 +492,14 @@ class _DropDownContainer extends StatelessWidget {
 ### Methods
 
 ```
+
+## Mobile card style
+
+The package includes a modern mobile card view: each row is rendered as a Card
+with each column header displayed above its value. Long values are truncated
+with an ellipsis to keep items compact and readable on small screens. See the
+`example/` app for a visual demonstration of the mobile layout.
+
     onSelect( bool selected, dynamic key);
     onSelectAll( bool selected );
     onTabRow( dynamic row );

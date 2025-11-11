@@ -2,6 +2,23 @@ import 'package:adaptivex/adaptivex.dart';
 import 'package:flutter/material.dart';
 import 'datatable_header.dart';
 
+// Shared cached styles used across mobile and desktop widgets to minimize
+// allocations during rebuilds.
+const TextStyle _kDefaultHeaderTextStyle = TextStyle(
+  fontSize: 12,
+  color: Colors.black54,
+  fontWeight: FontWeight.w600,
+);
+
+const TextStyle _kDefaultRowTextStyle = TextStyle(
+  fontSize: 14,
+  color: Colors.black87,
+);
+
+const TextStyle _kDefaultSelectedTextStyle = TextStyle(
+  fontSize: 14,
+);
+
 class ResponsiveDatatable extends StatefulWidget {
   final bool showSelect;
   final List<DatatableHeader> headers;
@@ -111,6 +128,8 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
 
   static const double _defaultPadding = 11.0;
   static const double _iconSize = 15.0;
+  // Cached styles to avoid reallocations during build
+  
   Widget mobileHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -209,13 +228,16 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
                   Row(
                     children: [
                       if (widget.showSelect && selecteds.isNotEmpty)
-                        Checkbox(
-                            value: selecteds.contains(data),
-                            onChanged: (value) {
-                              if (widget.onSelect != null) {
-                                widget.onSelect!(value, data);
-                              }
-                            }),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Checkbox(
+                                  value: selecteds.contains(data),
+                                  onChanged: (value) {
+                                    if (widget.onSelect != null) {
+                                      widget.onSelect!(value, data);
+                                    }
+                                  }),
+                            ),
                       const Spacer(),
                     ],
                   ),
@@ -237,12 +259,7 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
                               ? header.headerBuilder!(header.value)
                               : Text(
                                   header.text,
-                                  style: widget.headerTextStyle ??
-                                      const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.black54,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  style: widget.headerTextStyle ?? _kDefaultHeaderTextStyle,
                                 ),
                           const SizedBox(height: 6),
                           header.sourceBuilder != null
@@ -256,18 +273,16 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
                                       onSubmitted: widget.onSubmittedRow,
                                       hideUnderline: widget.hideUnderline,
                                     )
-                                  : Text(
-                                      value == null ? '' : "$value",
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: selecteds.contains(data)
-                                          ? widget.selectedTextStyle ??
-                                              const TextStyle(fontSize: 14)
-                                          : widget.rowTextStyle ??
-                                              const TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.black87,
-                                              ),
+                                  : Semantics(
+                                      label: '${header.text}: ${value ?? ''}',
+                                      child: Text(
+                                        value == null ? '' : "$value",
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: selecteds.contains(data)
+                                            ? widget.selectedTextStyle ?? _kDefaultSelectedTextStyle
+                                            : widget.rowTextStyle ?? _kDefaultRowTextStyle,
+                                      ),
                                     ),
                         ],
                       ),
@@ -669,11 +684,14 @@ class _MobileDataCard extends StatelessWidget {
               Row(
                 children: [
                   if (showSelect && selecteds.isNotEmpty)
-                    Checkbox(
-                        value: isSelected,
-                        onChanged: (value) {
-                          if (onSelect != null) onSelect!(value, data);
-                        }),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Checkbox(
+                          value: isSelected,
+                          onChanged: (value) {
+                            if (onSelect != null) onSelect!(value, data);
+                          }),
+                    ),
                   const Spacer(),
                 ],
               ),
@@ -691,11 +709,7 @@ class _MobileDataCard extends StatelessWidget {
                           ? header.headerBuilder!(header.value)
                           : Text(
                               header.text,
-                              style: headerTextStyle ?? const TextStyle(
-                                fontSize: 12,
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: headerTextStyle ?? _kDefaultHeaderTextStyle,
                             ),
                       const SizedBox(height: 6),
                       header.sourceBuilder != null
@@ -709,16 +723,16 @@ class _MobileDataCard extends StatelessWidget {
                                   onSubmitted: onSubmittedRow,
                                   hideUnderline: hideUnderline,
                                 )
-                              : Text(
-                                  value == null ? '' : "$value",
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: isSelected
-                                      ? selectedTextStyle ?? const TextStyle(fontSize: 14)
-                                      : rowTextStyle ?? const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black87,
-                                        ),
+                              : Semantics(
+                                  label: '${header.text}: ${value ?? ''}',
+                                  child: Text(
+                                    value == null ? '' : "$value",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: isSelected
+                                        ? selectedTextStyle ?? _kDefaultSelectedTextStyle
+                                        : rowTextStyle ?? _kDefaultRowTextStyle,
+                                  ),
                                 ),
                     ],
                   ),
