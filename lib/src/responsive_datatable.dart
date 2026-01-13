@@ -474,12 +474,12 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
                       border:
                           Border(bottom: BorderSide(color: Colors.grey[300]!))),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (widget.title != null) widget.title!,
-                      if (widget.actions != null) ...widget.actions!
-                    ],
-                  ),
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (widget.title != null) Expanded(child: widget.title!),
+                        if (widget.actions != null) ...widget.actions!
+                      ],
+                    ),
                 ),
 
               if (widget.autoHeight)
@@ -524,12 +524,12 @@ class _ResponsiveDatatableState extends State<ResponsiveDatatable> {
                       border:
                           Border(bottom: BorderSide(color: Colors.grey[300]!))),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (widget.title != null) widget.title!,
-                      if (widget.actions != null) ...widget.actions!
-                    ],
-                  ),
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (widget.title != null) Expanded(child: widget.title!),
+                        if (widget.actions != null) ...widget.actions!
+                      ],
+                    ),
                 ),
 
               /// desktopHeader
